@@ -5,5 +5,5 @@ package interfaces;
  */
 public interface Human {
 
-    void conversate();
+    void conversate(final int duration);
 }

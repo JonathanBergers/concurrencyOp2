@@ -41,6 +41,9 @@ public interface Company {
      * OR
      * when 0 customer is waiting and 3 developers are ready for a conv.
      *
+     * PRE product owner is available
+     * CRITICAL SECTION
+     *
      * @param productOwner
      */
     void startConversation(ProductOwner productOwner);

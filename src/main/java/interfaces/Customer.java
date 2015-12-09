@@ -15,6 +15,9 @@ public interface Customer extends Human{
      */
     void live();
 
+
+    void waitABit();
+
     
 
 

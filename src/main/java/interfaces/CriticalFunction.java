@@ -6,27 +6,33 @@ import java.util.concurrent.Semaphore;
 /**
  * Created by jonathan on 9-12-15.
  * Functional interface for handling critical actions
+ * has input and return type
  */
 @FunctionalInterface
-public interface CriticalInputAction<I> {
+public interface CriticalFunction<I, R> {
 
     /**Aquire lock
      * Executes an action
      * release lock
      *
+     * returns result
      * @param semaphore
      * @param input
      */
-    default void execute(Semaphore semaphore, I input){
+    default R execute(Semaphore semaphore, I input){
+
+
 
         try {
             semaphore.acquire();
-            theAction(input);
+            R result = theAction(input);
             semaphore.release();
+            return result;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
+        return null;
 
     }
 
@@ -34,6 +40,6 @@ public interface CriticalInputAction<I> {
      * The criticalAction
      * @param input
      */
-    void theAction(I input);
+    R theAction(I input);
 
 }

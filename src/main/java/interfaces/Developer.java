@@ -14,9 +14,4 @@ public interface Developer extends Human {
     void work();
 
 
-    /**When the PO starts a conversation
-     *
-     */
-    void conversate();
-
 }

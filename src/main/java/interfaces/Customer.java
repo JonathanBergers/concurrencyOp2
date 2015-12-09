@@ -5,10 +5,6 @@ package interfaces;
  */
 public interface Customer extends Human{
 
-    /**Called when the customer enters a conversation
-     *
-     */
-    void conversate();
 
     /**When the customer is not complaining or in a conversation
      *
@@ -16,7 +12,6 @@ public interface Customer extends Human{
     void live();
 
 
-    void waitABit();
 
     
 

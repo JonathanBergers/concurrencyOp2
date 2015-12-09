@@ -11,11 +11,9 @@ public interface ProductOwner extends Human {
      */
     void fixRoom();
 
-    void conversate();
 
     boolean isAvailable();
 
-    void askForConversation();
 
 
 

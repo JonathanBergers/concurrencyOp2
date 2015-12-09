@@ -1,26 +1,27 @@
 package interfaces;
 
+
 import java.util.concurrent.Semaphore;
 
 /**
  * Created by jonathan on 9-12-15.
- * Simple critical Action withuout input
+ * Functional interface for handling critical actions
  */
 @FunctionalInterface
-public interface CriticalAction {
-
+public interface CriticalInputAction<I> {
 
     /**Aquire lock
      * Executes an action
      * release lock
      *
      * @param semaphore
+     * @param input
      */
-    default void execute(Semaphore semaphore){
+    default void execute(Semaphore semaphore, I input){
 
         try {
             semaphore.acquire();
-            theAction();
+            theAction(input);
             semaphore.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -31,6 +32,8 @@ public interface CriticalAction {
 
     /**
      * The criticalAction
+     * @param input
      */
-    void theAction();
+    void theAction(I input);
+
 }

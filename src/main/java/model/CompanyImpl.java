@@ -29,19 +29,19 @@ public class CompanyImpl implements Company{
     public void joinCustomerQueue(Customer customer) {
         // java 8, critical action interface
         // this is a method reference, see javadoc 8
-        ((CriticalAction<Customer>) customerQueue::add).execute(manipulateCustomerQueue, customer);
+        ((CriticalAction) () -> customerQueue.add(customer)).execute(manipulateCustomerQueue);
     }
 
     public void joinDeveloperQueue(Developer developer) {
-        ((CriticalAction<Developer>) developerQueue::add).execute(manipulateDeveloperQueue, developer);
+        ((CriticalAction) () -> developerQueue.add(developer)).execute(manipulateDeveloperQueue);
     }
 
     public void leaveCustomerQueue(Customer customer) {
-        ((CriticalAction<Customer>) customerQueue::remove).execute(manipulateCustomerQueue, customer);
+        ((CriticalAction) () -> customerQueue.remove(customer)).execute(manipulateCustomerQueue);
     }
 
     public void leaveDeveloperQueue(Developer developer) {
-        ((CriticalAction<Developer>) developerQueue::remove).execute(manipulateDeveloperQueue, developer);
+        ((CriticalAction) () -> developerQueue.remove(developer)).execute(manipulateDeveloperQueue);
     }
 
     public void startConversation(ProductOwner productOwner) {

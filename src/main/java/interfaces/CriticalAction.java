@@ -22,9 +22,11 @@ public interface CriticalAction {
             semaphore.acquire();
             theAction();
             semaphore.release();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
 
 
     }

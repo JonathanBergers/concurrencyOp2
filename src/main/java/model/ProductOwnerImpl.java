@@ -1,7 +1,10 @@
 package model;
 
 import interfaces.Company;
+import interfaces.CriticalFunction;
 import interfaces.ProductOwner;
+
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by jonathan on 9-12-15.
@@ -19,7 +22,9 @@ public class ProductOwnerImpl implements ProductOwner {
     public void fixRoom() {
         try {
             System.out.println("Fixxing my room");
-            Thread.sleep(50);
+            Thread.sleep(200);
+
+            // check if the po can have another conv
             //done with conversation
 
         } catch (InterruptedException e) {
@@ -28,17 +33,20 @@ public class ProductOwnerImpl implements ProductOwner {
     }
 
     @Override
-    public void conversate(int duration) {
+    public void conversate(Semaphore semaphore) {
+
+
         try {
             available = false;
-            System.out.println("Product owner talk");
-            Thread.sleep(duration);
-            available = true;
-            //done with conversation
+            Thread.sleep(5000);
+            System.out.println("PO: done with conv");
+            semaphore.release();
 
+            available = true;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override

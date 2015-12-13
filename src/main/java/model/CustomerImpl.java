@@ -32,19 +32,6 @@ public class CustomerImpl implements Customer {
 
 
     @Override
-    public void conversate(int duration) {
-        System.out.println("Yo product sucks dude");
-        try {
-            Thread.sleep(duration);
-            //done with conversation
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    @Override
     public void run() {
 
         while(true){

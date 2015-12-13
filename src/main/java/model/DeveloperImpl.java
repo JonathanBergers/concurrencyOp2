@@ -29,17 +29,7 @@ public class DeveloperImpl implements Developer {
         }
     }
 
-    @Override
-    public void conversate(int duration) {
-        System.out.println("Special price special price");
-        try {
-            Thread.sleep(duration);
-            //done with conversation
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void run() {

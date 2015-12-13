@@ -2,8 +2,14 @@ package model;
 
 import interfaces.*;
 
+import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.SynchronousQueue;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Created by jonathan on 9-12-15.
@@ -12,26 +18,30 @@ public class CompanyImpl implements Company{
 
 
     //list of customers who have a complain and are waiting for a conversation
-    private PriorityQueue<Customer> customerQueue = new PriorityQueue<>();
+    private Queue<Customer> customerQueue = new LinkedList<>();
     //list of developers waiting who are ready for a conv and are waiting for a signal of the product owner
-    private PriorityQueue<Developer> developerQueue = new PriorityQueue<>();
+    private Queue<Developer> developerQueue = new LinkedList<>();
 
     private final ProductOwner productOwner;
 
+
+
+
     private final Semaphore manipulateCustomerQueue, manipulateDeveloperQueue, manipulateProductOwner;
 
-    public CompanyImpl() {
+    public CompanyImpl(final int amountOfCustomers, final int amountOfDevelopers) {
         this.productOwner = new ProductOwnerImpl(this);
-        manipulateCustomerQueue = new Semaphore(-1);
-        manipulateDeveloperQueue = new Semaphore(-1);
-        manipulateProductOwner = new Semaphore(-1);
+        manipulateCustomerQueue = new Semaphore(1);
+        manipulateDeveloperQueue = new Semaphore(1);
+        manipulateProductOwner = new Semaphore(1);
 
 
         new Thread(productOwner).start();
         // add some humans
-        for (int i = 0; i < 10; i++) {
-
+        for (int i = 0; i < amountOfCustomers; i++) {
             new Thread(new CustomerImpl(this)).start();
+        }
+        for (int i = 0; i < amountOfDevelopers; i++) {
             new Thread(new DeveloperImpl(this)).start();
         }
 
@@ -39,6 +49,8 @@ public class CompanyImpl implements Company{
 
 
     public void joinCustomerQueue(Customer customer) {
+
+
         // java 8, critical action interface
         // this is a method reference, see javadoc 8
         ((CriticalAction) () -> customerQueue.add(customer)).execute(manipulateCustomerQueue);
@@ -51,19 +63,21 @@ public class CompanyImpl implements Company{
 
     public void joinDeveloperQueue(Developer developer) {
 
+
+
         ((CriticalAction) () -> {
             if(productOwner.isAvailable()){
+
                 // add to queue
                 ((CriticalAction) () -> developerQueue.add(developer)).execute(manipulateDeveloperQueue);
+                //startConversation(productOwner);
 
-                // check if po can start a conversation
-                startConversation(productOwner);
             }else{
                 developer.work();
             }
         }).execute(manipulateProductOwner);
-
-
+        // check if the po can have a conversation
+        ((CriticalAction) () -> startConversation(productOwner)).execute(manipulateProductOwner);
 
     }
 
@@ -74,10 +88,12 @@ public class CompanyImpl implements Company{
         // critical action for productowner
 
 
+        System.out.println("CHECK FOR CONVERSATION");
         // critical action for getting dev size
         ((CriticalAction) () -> {
 
             int amountOfDevelopers = developerQueue.size();
+
 
 
             // critical action for getting cust size
@@ -88,16 +104,14 @@ public class CompanyImpl implements Company{
                 // CUSTOMER CONVERSATION
                 if(amountOfCustomers >0 && amountOfDevelopers >0){
 
+                    System.out.println("SHOULD START A CUSTOMER CONV");
                     // new conversation
-                    Conversation conversation = new Conversation(1000);
-                    conversation.addHuman(productOwner);
+                    Conversation conversation = new Conversation(productOwner);
 
 
                     // tell all the customers to conversate and remove them from the queue
-                    customerQueue.forEach(customer -> {
-                        conversation.addHuman(customer);
-                        customerQueue.remove(customer);
-                    });
+                    customerQueue.forEach(conversation::addHuman);
+                    customerQueue.clear();
 
                     assert customerQueue.isEmpty();
 
@@ -108,10 +122,9 @@ public class CompanyImpl implements Company{
 
                     // tell all the other developers to go back to work
                     // and remove them from the queue
-                    developerQueue.forEach(developer1 -> {
-                        developer1.work();
-                        developerQueue.remove(developer1);
-                    });
+                    developerQueue.forEach(conversation::addHuman);
+                    developerQueue.clear();
+
                     assert developerQueue.isEmpty();
 
                     conversation.start();
@@ -123,25 +136,24 @@ public class CompanyImpl implements Company{
                 if(amountOfCustomers == 0 && amountOfDevelopers >= 3){
 
 
-                    Conversation conversation = new Conversation(3000);
+                    Conversation conversation = new Conversation(productOwner);
 
-                    conversation.addHuman(productOwner);
                     // add developers
                     conversation.addHuman(developerQueue.poll());
                     conversation.addHuman(developerQueue.poll());
                     conversation.addHuman(developerQueue.poll());
 
                     // tell others to go work again
-                    developerQueue.forEach(developer1 -> {
-                        developer1.work();
-                        developerQueue.remove(developer1);
-                    });
+                    developerQueue.forEach(conversation::addHuman);
+                    developerQueue.clear();
 
                     conversation.start();
                     return;
 
                 }
 
+
+                System.out.println("NO CONVERSATION NEEDED");
                 //No conversation possible
                 productOwner.fixRoom();
 

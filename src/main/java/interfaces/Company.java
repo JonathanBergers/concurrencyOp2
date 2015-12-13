@@ -1,5 +1,8 @@
 package interfaces;
 
+import model.Developer;
+import model.ProductOwner;
+
 /**
  * Created by jonathan on 9-12-15.
  */
@@ -11,7 +14,7 @@ public interface Company {
      *
      * @param customer
      */
-    void joinCustomerQueue(Customer customer);
+    void joinCustomerQueue(Human customer);
 
     /**Called when a developer becomes available for a conversation with the product owner
      * and 3 other developers OR alone with another customer
@@ -20,19 +23,19 @@ public interface Company {
      */
     void joinDeveloperQueue(Developer developer);
 
-    /**Called when a user is done having a conversation with the product owner and a developer
-     *
-     * @param customer
-     */
-    void leaveCustomerQueue(Customer customer);
-
-    /**Called when the product owner is not available
-     * OR when the PO IS available but the developer is not invited for a conversation
-     * OR when the developer is done having a conversation
-     *
-     * @param developer
-     */
-    void leaveDeveloperQueue(Developer developer);
+//    /**Called when a user is done having a conversation with the product owner and a developer
+//     *
+//     * @param customer
+//     */
+//    void leaveCustomerQueue(Human customer);
+//
+//    /**Called when the product owner is not available
+//     * OR when the PO IS available but the developer is not invited for a conversation
+//     * OR when the developer is done having a conversation
+//     *
+//     * @param developer
+//     */
+//    void leaveDeveloperQueue(Developer developer);
 
 
     /**Called when the product owner is available for a conversation

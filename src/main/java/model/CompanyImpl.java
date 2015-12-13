@@ -2,14 +2,9 @@ package model;
 
 import interfaces.*;
 
-import java.util.ArrayDeque;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Created by jonathan on 9-12-15.
@@ -18,9 +13,9 @@ public class CompanyImpl implements Company{
 
 
     //list of customers who have a complain and are waiting for a conversation
-    private Queue<Customer> customerQueue = new LinkedList<>();
+    private Queue<Human> customerQueue = new LinkedList<>();
     //list of developers waiting who are ready for a conv and are waiting for a signal of the product owner
-    private Queue<Developer> developerQueue = new LinkedList<>();
+    private Queue<Human> developerQueue = new LinkedList<>();
 
     private final ProductOwner productOwner;
 
@@ -30,7 +25,7 @@ public class CompanyImpl implements Company{
     private final Semaphore manipulateCustomerQueue, manipulateDeveloperQueue, manipulateProductOwner;
 
     public CompanyImpl(final int amountOfCustomers, final int amountOfDevelopers) {
-        this.productOwner = new ProductOwnerImpl(this);
+        this.productOwner = new ProductOwner(1, this);
         manipulateCustomerQueue = new Semaphore(1);
         manipulateDeveloperQueue = new Semaphore(1);
         manipulateProductOwner = new Semaphore(1);
@@ -39,16 +34,16 @@ public class CompanyImpl implements Company{
         new Thread(productOwner).start();
         // add some humans
         for (int i = 0; i < amountOfCustomers; i++) {
-            new Thread(new CustomerImpl(this)).start();
+            new Customer(i, this).start();
         }
         for (int i = 0; i < amountOfDevelopers; i++) {
-            new Thread(new DeveloperImpl(this)).start();
+            new Developer(i, this).start();
         }
 
     }
 
 
-    public void joinCustomerQueue(Customer customer) {
+    public void joinCustomerQueue(Human customer) {
 
 
         // java 8, critical action interface
@@ -70,16 +65,18 @@ public class CompanyImpl implements Company{
 
                 // add to queue
                 ((CriticalAction) () -> developerQueue.add(developer)).execute(manipulateDeveloperQueue);
-                //startConversation(productOwner);
+                startConversation(productOwner);
 
             }else{
-                developer.work();
+                developer.goBackToWork();
             }
         }).execute(manipulateProductOwner);
         // check if the po can have a conversation
-        ((CriticalAction) () -> startConversation(productOwner)).execute(manipulateProductOwner);
+        //((CriticalAction) () -> startConversation(productOwner)).execute(manipulateProductOwner);
 
     }
+
+
 
 
 
@@ -88,7 +85,7 @@ public class CompanyImpl implements Company{
         // critical action for productowner
 
 
-        System.out.println("CHECK FOR CONVERSATION");
+        //System.out.println("CHECK FOR CONVERSATION");
         // critical action for getting dev size
         ((CriticalAction) () -> {
 
@@ -104,7 +101,7 @@ public class CompanyImpl implements Company{
                 // CUSTOMER CONVERSATION
                 if(amountOfCustomers >0 && amountOfDevelopers >0){
 
-                    System.out.println("SHOULD START A CUSTOMER CONV");
+                    System.out.println("PO: should start customer conv");
                     // new conversation
                     Conversation conversation = new Conversation(productOwner);
 
@@ -116,7 +113,7 @@ public class CompanyImpl implements Company{
                     assert customerQueue.isEmpty();
 
                     // get the first developer and have a conversation
-                    Developer developer = developerQueue.poll();
+                    Human developer = developerQueue.poll();
                     assert developer != null;
                     conversation.addHuman(developer);
 
@@ -136,6 +133,7 @@ public class CompanyImpl implements Company{
                 if(amountOfCustomers == 0 && amountOfDevelopers >= 3){
 
 
+                    System.out.println("PO: should start developer conversation");
                     Conversation conversation = new Conversation(productOwner);
 
                     // add developers
@@ -153,9 +151,9 @@ public class CompanyImpl implements Company{
                 }
 
 
-                System.out.println("NO CONVERSATION NEEDED");
+                System.out.println("PO: no conversation needed, back to my room.");
                 //No conversation possible
-                productOwner.fixRoom();
+                //productOwner.fixRoom();
 
 
 
@@ -172,13 +170,5 @@ public class CompanyImpl implements Company{
     }
 
 
-
-    public void leaveCustomerQueue(Customer customer) {
-        ((CriticalAction) () -> customerQueue.remove(customer)).execute(manipulateCustomerQueue);
-    }
-
-    public void leaveDeveloperQueue(Developer developer) {
-        ((CriticalAction) () -> developerQueue.remove(developer)).execute(manipulateDeveloperQueue);
-    }
 
 }

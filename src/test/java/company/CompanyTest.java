@@ -1,8 +1,6 @@
 package company;
 
-import interfaces.Company;
 import model.CompanyImpl;
-import model.ProductOwnerImpl;
 import org.junit.Test;
 
 /**
